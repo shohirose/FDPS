@@ -1,3 +1,6 @@
 # MSVC
 out/
 .vs/
+
+# Visual Studio Code
+.vscode/
