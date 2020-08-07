@@ -6,7 +6,7 @@ target_compile_features(sph
 target_compile_options(sph
   PRIVATE
     # For GCC and Clang
-    $<$<CXX_COMPILER_ID:GNU>:-ffast-math -funroll-loops -Wall -Wextra -Wpedantic>
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-ffast-math -funroll-loops -Wall -Wextra -Wpedantic>
     # For Visual Studio
     $<$<CXX_COMPILER_ID:MSVC>:/fp:fast /W4>
     # For Intel comipler
