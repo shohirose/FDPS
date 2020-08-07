@@ -5,11 +5,6 @@
 #include <cstdio>
 #include <iostream>
 #include <vector>
-#ifdef _MSC_VER
-#include <direct.h>
-#else
-#include <sys/stat.h>
-#endif
 
 /* Parameters */
 const short int Dim = 3;
@@ -214,29 +209,32 @@ class CalcHydroForce{
    }
 };
 
-void makeOutputDirectory(char * dir_name) {
-    struct stat st;
-    PS::S32 ret;
-    if (PS::Comm::getRank() == 0) {
-        if (stat(dir_name, &st) != 0) {
-#ifdef _MSC_VER
-            ret = _mkdir(dir_name);
-#else
-            ret = mkdir(dir_name, 0777);
-#endif
-        } else {
-            ret = 0; // the directory named dir_name already exists.
-        }
-    } 
-    PS::Comm::broadcast(&ret, 1);
-    if (ret == 0) {
-        if (PS::Comm::getRank() == 0)
-            fprintf(stderr, "Directory \"%s\" is successfully made.\n", dir_name);
-    } else {
-        if (PS::Comm::getRank() == 0)
-            fprintf(stderr, "Directory %s fails to be made.\n", dir_name);
-        PS::Abort();
-    }
+void makeOutputDirectory(char* dir_name) {
+  struct stat st;
+  PS::S32 ret;
+  if (PS::Comm::getRank() == 0) {
+    const std::string directoryName(dir_name);
+    bool directoryHasCreated = false;
+    if (PS::exists(directoryName))
+      directoryHasCreated = true;
+    else
+      directoryHasCreated = PS::createDirectory(directoryName);
+
+    bool permissionHasChanged = false;
+    if (directoryHasCreated)
+      permissionHasChanged = PS::permissions(directoryName, 0777);
+
+    ret = (directoryHasCreated && permissionHasChanged) ? 0 : -1;
+  }
+  PS::Comm::broadcast(&ret, 1);
+  if (ret == 0) {
+    if (PS::Comm::getRank() == 0)
+      fprintf(stderr, "Directory \"%s\" is successfully made.\n", dir_name);
+  } else {
+    if (PS::Comm::getRank() == 0)
+      fprintf(stderr, "Directory %s fails to be made.\n", dir_name);
+    PS::Abort();
+  }
 }
 
 void SetupIC(PS::ParticleSystem<FP>& sph_system, PS::F64 *end_time, boundary *box){
