@@ -1,0 +1,39 @@
+cmake_policy(SET CMP0076 NEW)
+
+target_sources(FDPS
+  INTERFACE
+    comm_table.hpp
+    domain_info.hpp
+    interaction_list.hpp
+    io.hpp
+    key.hpp
+    matrix_sym2.hpp
+    matrix_sym3.hpp
+    matrix2.hpp
+    memory_pool.hpp
+    MT.hpp
+    orthotope2.hpp
+    orthotope2i.hpp
+    orthotope3.hpp
+    orthotope3i.hpp
+    particle_simulator.hpp
+    particle_system.hpp
+    profile.hpp
+    ps_defs.hpp
+    ps_macro_defs.h
+    reallocatable_array.hpp
+    sort.hpp
+    stack.hpp
+    timer.hpp
+    tree.hpp
+    tree_for_force.hpp
+    tree_for_force_check_impl.hpp
+    tree_for_force_impl.hpp
+    tree_for_force_impl_force.hpp
+    tree_for_force_utils.hpp
+    tree_for_force_utils2.hpp
+    tree_walk.hpp
+    util.hpp
+    vector2.hpp
+    vector3.hpp
+  )

@@ -12,6 +12,7 @@ target_compile_features(FDPS
     # C++17
     cxx_std_17
   )
+add_subdirectory(src)
 
 add_library(FDPS::FDPS ALIAS FDPS)
 
