@@ -1,7 +1,5 @@
-cmake_policy(SET CMP0076 NEW)
-
 target_sources(FDPS
-  INTERFACE
+  PUBLIC
     comm_table.hpp
     domain_info.hpp
     interaction_list.hpp
@@ -37,3 +35,5 @@ target_sources(FDPS
     vector2.hpp
     vector3.hpp
   )
+
+# add_subdirectory(particle_mesh)
