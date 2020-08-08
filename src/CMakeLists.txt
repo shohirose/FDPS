@@ -1,4 +1,5 @@
 target_sources(FDPS
   PRIVATE
     io.cpp
+    key.cpp
   )
