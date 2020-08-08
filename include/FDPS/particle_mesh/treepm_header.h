@@ -8,9 +8,10 @@
 #include<sys/time.h>
 #include<sys/resource.h>
 
-#include "mpi.h"
-#include "param.h"
-#include "tools.h"
+#include <mpi.h>
+
+#include "FDPS/particle_mesh/param.h"
+#include "FDPS/particle_mesh/tools.h"
 
 using namespace std;
 

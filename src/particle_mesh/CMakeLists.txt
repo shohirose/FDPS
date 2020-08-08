@@ -1,0 +1,10 @@
+target_sources(FDPS
+  PRIVATE
+    decomposition.cpp
+    evolve.cpp
+    io.cpp
+    pm_parallel.cpp
+    pp2.cpp
+    ptobmp.cpp
+    tools.cpp
+  )

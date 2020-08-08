@@ -1,4 +1,4 @@
-#include "pm_parallel.h"
+#include "FDPS/particle_mesh/pm_parallel.h"
 
 namespace ParticleSimulator{
     namespace ParticleMesh{

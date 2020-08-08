@@ -1,6 +1,6 @@
-#include "treepm_header.h"
-#include "pp.h"
-#include "tools.h"
+#include "FDPS/particle_mesh/treepm_header.h"
+#include "FDPS/particle_mesh/pp.h"
+#include "FDPS/particle_mesh/tools.h"
 
 namespace ParticleSimulator{
     namespace ParticleMesh{

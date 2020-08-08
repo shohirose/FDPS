@@ -14,8 +14,9 @@
 #include<sys/stat.h>
 #include<sys/types.h>
 
-#include "mpi.h"
-#include "param.h"
+#include <mpi.h>
+
+#include "FDPS/particle_mesh/param.h"
 
 #ifdef _OPENMP
 #include "omp.h"
