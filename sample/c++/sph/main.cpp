@@ -1,10 +1,9 @@
-// Include FDPS header
-#include <particle_simulator.hpp>
-// Include the standard C++ headers
 #include <cmath>
 #include <cstdio>
 #include <iostream>
 #include <vector>
+
+#include "FDPS/particle_simulator.hpp"
 
 /* Parameters */
 const short int Dim = 3;
