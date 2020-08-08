@@ -6,12 +6,12 @@
 #include <unordered_map>
 #endif
 
-#include <comm_table.hpp>
-#include <interaction_list.hpp>
-#include <sort.hpp>
-#include <tree.hpp>
-#include <tree_for_force_utils.hpp>
-#include <tree_walk.hpp>
+#include "FDPS/comm_table.hpp"
+#include "FDPS/interaction_list.hpp"
+#include "FDPS/sort.hpp"
+#include "FDPS/tree.hpp"
+#include "FDPS/tree_for_force_utils.hpp"
+#include "FDPS/tree_walk.hpp"
 
 namespace ParticleSimulator {
 

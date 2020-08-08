@@ -12,26 +12,26 @@
 #include <typeinfo>
 #include <vector>
 
-#include "time.h"
+#include <time.h>
 
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
-#include "mpi.h"
+#include <mpi.h>
 #endif
 
 #ifdef PARTICLE_SIMULATOR_THREAD_PARALLEL
 #include <omp.h>
 #endif
 
-#include "matrix2.hpp"
-#include "matrix_sym2.hpp"
-#include "matrix_sym3.hpp"
-#include "memory_pool.hpp"
-#include "orthotope2.hpp"
-#include "orthotope2i.hpp"
-#include "orthotope3.hpp"
-#include "orthotope3i.hpp"
-#include "vector2.hpp"
-#include "vector3.hpp"
+#include "FDPS/matrix2.hpp"
+#include "FDPS/matrix_sym2.hpp"
+#include "FDPS/matrix_sym3.hpp"
+#include "FDPS/memory_pool.hpp"
+#include "FDPS/orthotope2.hpp"
+#include "FDPS/orthotope2i.hpp"
+#include "FDPS/orthotope3.hpp"
+#include "FDPS/orthotope3i.hpp"
+#include "FDPS/vector2.hpp"
+#include "FDPS/vector3.hpp"
 
 #define PS_DEBUG_CALL(func)                                                   \
   do {                                                                        \

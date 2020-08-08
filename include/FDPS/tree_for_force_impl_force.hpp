@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tree_walk.hpp"
+#include "FDPS/tree_walk.hpp"
 
 namespace ParticleSimulator {
 ///////////////////////////////////////////////////

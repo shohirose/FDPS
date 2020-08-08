@@ -1,8 +1,4 @@
 add_executable(sph main.cpp)
-target_compile_features(sph
-  PRIVATE
-    cxx_std_11
-  )
 target_compile_options(sph
   PRIVATE
     # For GCC and Clang

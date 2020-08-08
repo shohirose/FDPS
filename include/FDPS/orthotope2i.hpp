@@ -2,7 +2,7 @@
 
 #include <limits>
 
-#include "vector3.hpp"
+#include "FDPS/vector3.hpp"
 
 // T must be S32 or S64.
 namespace ParticleSimulator {

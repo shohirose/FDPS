@@ -1,5 +1,7 @@
 #pragma once
+
 #include <cassert>
+
 namespace ParticleSimulator {
 
 template <typename T, int NMAX = 200>

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8.2)
 project(FDPS CXX C)
 
 add_library(FDPS INTERFACE)
-target_include_directories(FDPS INTERFACE src)
+target_include_directories(FDPS INTERFACE include)
 target_compile_features(FDPS
   INTERFACE
     # C++11
@@ -12,7 +12,7 @@ target_compile_features(FDPS
     # C++17
     cxx_std_17
   )
-add_subdirectory(src)
+add_subdirectory(include/FDPS)
 
 add_library(FDPS::FDPS ALIAS FDPS)
 

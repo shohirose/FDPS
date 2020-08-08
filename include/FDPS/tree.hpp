@@ -1,5 +1,6 @@
 #pragma once
-#include <key.hpp>
+
+#include "FDPS/key.hpp"
 
 namespace ParticleSimulator {
 

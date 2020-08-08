@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////
 /// implementaion of methods of TreeForForce ///
 
-#include "tree_walk.hpp"
+#include "FDPS/tree_walk.hpp"
 
 namespace ParticleSimulator {
 template <class TSM, class Tforce, class Tepi, class Tepj, class Tmomloc,
