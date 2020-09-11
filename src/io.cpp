@@ -4,7 +4,17 @@
 
 // Use std::filesystem
 #ifdef __cpp_lib_filesystem
+#define FDPS_USE_FILESYSTEM
 #include <filesystem>
+namespace fs = std::filesystem;
+// Use boost::filesystem
+#elif defined(BOOST_FILESYSTEM_VERSION)
+#define FDPS_USE_FILESYSTEM
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+#define BOOST_FILESYSTEM_NO_DEPRECATED
+#endif
+#include <boost/filesystem>
+namespace fs = boost::filesystem;
 // Use MSVC functions
 #elif defined(_MSC_VER)
 #include <direct.h>    // _mkdir
@@ -27,8 +37,7 @@ namespace ParticleSimulator
 
 
 bool exists(const std::string& fileOrDirectoryName) noexcept {
-#ifdef __cpp_lib_filesystem
-  namespace fs = std::filesystem;
+#ifdef FDPS_USE_FILESYSTEM
   return fs::exists(fs::path(fileOrDirectoryName));
 #elif defined(_MSC_VER)
   return _access(fileOrDirectoryName.c_str(), 0) == 0;
@@ -61,9 +70,8 @@ bool exists(const std::string& fileOrDirectoryName) noexcept {
 }
 
 bool createDirectory(const std::string& directoryName) noexcept {
-#ifdef __cpp_lib_filesystem
+#ifdef FDPS_USE_FILESYSTEM
   try {
-    namespace fs = std::filesystem;
     return fs::create_directory(fs::path(directoryName));
   } catch (const std::exception& e) {
     std::cerr << e.what() << std::endl;
@@ -77,10 +85,8 @@ bool createDirectory(const std::string& directoryName) noexcept {
 }
 
 bool permissions(const std::string& fileOrDirectoryName, int mode) noexcept {
-#ifdef __cpp_lib_filesystem
+#ifdef FDPS_USE_FILESYSTEM
   try {
-    namespace fs = std::filesystem;
-
     fs::perms fsmode = fs::perms::none;
     switch (mode) {
       case 0:
