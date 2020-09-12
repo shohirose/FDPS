@@ -1,6 +1,6 @@
 #include "FDPS/functions.hpp"
 
-#include "FDPS/comm_table.hpp"
+#include "FDPS/comm.hpp"
 #include "FDPS/memory_pool.hpp"
 
 namespace ParticleSimulator {

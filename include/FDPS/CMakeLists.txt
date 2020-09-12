@@ -35,6 +35,9 @@ target_sources(FDPS
     vector2.hpp
     vector3.hpp
     functions.hpp
+    comm.hpp
+    comm_for_all_to_all.hpp
+    time_profile.hpp
   )
 
 # add_subdirectory(particle_mesh)

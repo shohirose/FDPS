@@ -8,6 +8,9 @@
 #include "FDPS/tree_for_force.hpp"
 #include "FDPS/io.hpp"
 #include "FDPS/functions.hpp"
+#include "FDPS/comm.hpp"
+#include "FDPS/timer.hpp"
+#include "FDPS/util.hpp"
 // clang-format on
 
 namespace PS = ParticleSimulator;

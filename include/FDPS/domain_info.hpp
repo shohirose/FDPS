@@ -9,6 +9,9 @@
 #include <mpi.h>
 #endif
 
+#include "FDPS/time_profile.hpp"
+#include "FDPS/comm.hpp"
+
 namespace ParticleSimulator {
 
 template <S32 DIM>

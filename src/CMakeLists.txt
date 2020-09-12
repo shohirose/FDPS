@@ -4,4 +4,6 @@ target_sources(FDPS
     key.cpp
     memory_pool.cpp
     functions.cpp
+    comm.cpp
+    time_profile.cpp
   )
