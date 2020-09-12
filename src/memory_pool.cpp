@@ -1,5 +1,9 @@
 #include "FDPS/memory_pool.hpp"
 
+#ifdef PARTICLE_SIMULATOR_THREAD_PARALLEL
+#include <omp.h>
+#endif
+
 namespace ParticleSimulator {
 
 MemoryPool &MemoryPool::getInstance() noexcept {
