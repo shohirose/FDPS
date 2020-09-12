@@ -46,18 +46,18 @@ inline F64ort GetOuterBoundaryOfMyTree(
 }
 
 inline void ExchangeOuterBoundary(
-    TagSearchLong, F64ort *my_outer,
-    ReallocatableArray<F64ort> &outer) { /* do nothing */
+    TagSearchLong, F64ort *,
+    ReallocatableArray<F64ort> &) { /* do nothing */
 }
 
 inline void ExchangeOuterBoundary(
-    TagSearchLongCutoff, F64ort *my_outer,
-    ReallocatableArray<F64ort> &outer) { /* do nothing */
+    TagSearchLongCutoff, F64ort *,
+    ReallocatableArray<F64ort> &) { /* do nothing */
 }
 
 inline void ExchangeOuterBoundary(
-    TagSearchLongScatter, F64ort *my_outer,
-    ReallocatableArray<F64ort> &outer) { /* do nothing */
+    TagSearchLongScatter, F64ort *,
+    ReallocatableArray<F64ort> &) { /* do nothing */
 }
 
 inline void ExchangeOuterBoundary(TagSearchLongSymmetry, F64ort *my_outer,
@@ -66,18 +66,18 @@ inline void ExchangeOuterBoundary(TagSearchLongSymmetry, F64ort *my_outer,
 }
 
 inline void ExchangeOuterBoundary(
-    TagSearchShortScatter, F64ort *my_outer,
-    ReallocatableArray<F64ort> &outer) { /* do nothing */
+    TagSearchShortScatter, F64ort *,
+    ReallocatableArray<F64ort> &) { /* do nothing */
 }
 
 inline void ExchangeOuterBoundary(
-    TagSearchShortGather, F64ort *my_outer,
-    ReallocatableArray<F64ort> &outer) { /* do nothing */
+    TagSearchShortGather, F64ort *,
+    ReallocatableArray<F64ort> &) { /* do nothing */
 }
 
 inline void ExchangeOuterBoundary(
-    TagSearchShortSymmetry, F64ort *my_outer,
-    ReallocatableArray<F64ort> &outer) { /* do nothing */
+    TagSearchShortSymmetry, F64ort *,
+    ReallocatableArray<F64ort> &) { /* do nothing */
 }
 
 ////////////////////

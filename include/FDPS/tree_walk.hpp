@@ -167,20 +167,20 @@ inline void SetTargetBoxExLet<SEARCH_MODE_LONG_SYMMETRY>(
 template <>
 inline void SetTargetBoxExLet<SEARCH_MODE_LONG_SCATTER>(
     TargetBox<SEARCH_MODE_LONG_SCATTER>& box, const F64ort& in,
-    const F64ort& out) {
+    const F64ort& ) {
   box.vertex_ = in;
 }
 
 template <>
 inline void SetTargetBoxExLet<SEARCH_MODE_LONG>(
-    TargetBox<SEARCH_MODE_LONG>& box, const F64ort& in, const F64ort& out) {
+    TargetBox<SEARCH_MODE_LONG>& box, const F64ort& in, const F64ort& ) {
   box.vertex_ = in;
 }
 
 template <>
 inline void SetTargetBoxExLet<SEARCH_MODE_LONG_CUTOFF>(
     TargetBox<SEARCH_MODE_LONG_CUTOFF>& box, const F64ort& in,
-    const F64ort& out) {
+    const F64ort& ) {
   box.vertex_ = in;
 }
 // set target box for exching let
@@ -258,8 +258,8 @@ inline bool IsOpen(TagSearchShortGather,
 
 ///////////
 // COPY INFO DISTANT
-inline void CopyInfoDistant(TagForceShort, const S32 adr_sp,
-                            ReallocatableArray<S32>& adr_sp_list) {
+inline void CopyInfoDistant(TagForceShort, const S32 ,
+                            ReallocatableArray<S32>& ) {
   // do nothing
 }
 

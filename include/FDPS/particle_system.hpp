@@ -98,7 +98,7 @@ class ParticleSystem {
     }
   }
 
-  void createParticle(const S32 n_limit, bool clear = true) {
+  void createParticle(const S32 n_limit, [[maybe_unused]] bool clear = true) {
     // n_ptcl_limit_ = n_limit;
     // ptcl_ = new Tptcl[n_ptcl_limit_];
     ptcl_.reserve(n_limit);

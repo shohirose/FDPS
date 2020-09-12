@@ -517,7 +517,7 @@ class MomentMonopoleInAndOut {
     (this->vertex_in_).merge(mom.vertex_in_);
   }
 
-  void accumulate2(const MomentMonopoleInAndOut& mom) {}
+  void accumulate2(const MomentMonopoleInAndOut& ) {}
 
   // for DEBUG
   void dump(std::ostream& fout = std::cout) const {
@@ -692,7 +692,7 @@ class MomentMonopoleScatter {
     (this->vertex_in_).merge(mom.vertex_in_);
   }
 
-  void accumulate2(const MomentMonopoleScatter& mom) {}
+  void accumulate2(const MomentMonopoleScatter& ) {}
 
   // for DEBUG
   void dump(std::ostream& fout = std::cout) const {
@@ -870,7 +870,7 @@ class MomentMonopoleCutoffScatter {
     (this->vertex_in_).merge(mom.vertex_in_);
   }
 
-  void accumulate2(const MomentMonopoleCutoffScatter& mom) {}
+  void accumulate2(const MomentMonopoleCutoffScatter& ) {}
 
   // for DEBUG
   void dump(std::ostream& fout = std::cout) const {
@@ -914,7 +914,7 @@ class MomentMonopole {
   }
 
   template <class Tepj>
-  void accumulateAtLeaf2(const Tepj& epj) {}
+  void accumulateAtLeaf2(const Tepj& ) {}
 
   void set() { pos = pos / mass; }
 
@@ -923,7 +923,7 @@ class MomentMonopole {
     pos += mom.mass * mom.pos;
   }
 
-  void accumulate2(const MomentMonopole& mom) {}
+  void accumulate2(const MomentMonopole& ) {}
 
   // for DEBUG
   void dump(std::ostream& fout = std::cout) const {
@@ -1045,7 +1045,7 @@ class MomentMonopoleGeometricCenter {
   }
 
   template <class Tepj>
-  void accumulateAtLeaf2(const Tepj& epj) {}
+  void accumulateAtLeaf2(const Tepj& ) {}
   void set() { pos = pos / n_ptcl; }
 
   void accumulate(const MomentMonopoleGeometricCenter& mom) {
@@ -1277,7 +1277,7 @@ class MomentMonopoleCutoff {
     (this->vertex_out_).merge(mom.vertex_out_);
   }
 
-  void accumulate2(const MomentMonopoleCutoff& mom) {}
+  void accumulate2(const MomentMonopoleCutoff& ) {}
 
   // for DEBUG
   void dump(std::ostream& fout = std::cout) const {
@@ -1325,7 +1325,7 @@ class MomentSearchInAndOut {
   template <class Tep>
   void accumulateAtLeaf2(Tep& ep) {}
 
-  void accumulate2(const MomentSearchInAndOut& _mom) {}
+  void accumulate2(const MomentSearchInAndOut& ) {}
 
   void dump(std::ostream& fout = std::cout) const {
     fout << "vertex_out_.low_=" << vertex_out_.low_ << std::endl;
@@ -1359,7 +1359,7 @@ class MomentSearchInOnly {
   template <class Tep>
   void accumulateAtLeaf2(const Tep& ep) {}
 
-  void accumulate2(const MomentSearchInOnly& _mom) {}
+  void accumulate2(const MomentSearchInOnly& ) {}
 
   void dump(std::ostream& fout = std::cout) const {
     fout << "vertex_in_.low_=" << vertex_in_.low_ << std::endl;
