@@ -74,8 +74,8 @@ struct FP{
    PS::S64 id;
    PS::F64vec vel_half;
    PS::F64 eng_half;
-   void copyFromForce(const Dens& dens){
-      this->dens = dens.dens;
+   void copyFromForce(const Dens& tdens){
+      this->dens = tdens.dens;
    }
    void copyFromForce(const Hydro& force){
       this->acc     = force.acc;
@@ -91,8 +91,8 @@ struct FP{
    PS::F64 getRSearch() const{
       return kernelSupportRadius * this->smth;
    }
-   void setPos(const PS::F64vec& pos){
-      this->pos = pos;
+   void setPos(const PS::F64vec& tpos){
+      this->pos = tpos;
    }
    void writeAscii(FILE* fp) const{
       fprintf(fp,
@@ -143,8 +143,8 @@ struct EP{
    PS::F64 getRSearch() const{
       return kernelSupportRadius * this->smth;
    }
-   void setPos(const PS::F64vec& pos){
-      this->pos = pos;
+   void setPos(const PS::F64vec& tpos){
+      this->pos = tpos;
    }
 };
 
@@ -209,7 +209,7 @@ class CalcHydroForce{
 };
 
 void makeOutputDirectory(char* dir_name) {
-  struct stat st;
+  //struct stat st;
   PS::S32 ret;
   if (PS::Comm::getRank() == 0) {
     const std::string directoryName(dir_name);
@@ -275,8 +275,8 @@ void SetupIC(PS::ParticleSystem<FP>& sph_system, PS::F64 *end_time, boundary *bo
          }
       }
    }
-   for(PS::U32 i = 0 ; i < ptcl.size() ; ++ i){
-      ptcl[i].mass = ptcl[i].mass * box->x * box->y * box->z / (PS::F64)(ptcl.size());
+   for(PS::U32 j = 0 ; j < ptcl.size() ; ++j){
+      ptcl[j].mass = ptcl[j].mass * box->x * box->y * box->z / (PS::F64)(ptcl.size());
    }
    std::cout << "# of ptcls is... " << ptcl.size() << std::endl;
    // Scatter SPH particles
@@ -285,10 +285,10 @@ void SetupIC(PS::ParticleSystem<FP>& sph_system, PS::F64 *end_time, boundary *bo
    sph_system.setNumberOfParticleLocal(numPtclLocal);
    const PS::U32 i_head = numPtclLocal * PS::Comm::getRank();
    const PS::U32 i_tail = numPtclLocal * (PS::Comm::getRank() + 1);
-   for(PS::U32 i = 0 ; i < ptcl.size() ; ++ i){
-      if(i_head <= i && i < i_tail){
-         const PS::U32 ii = i - numPtclLocal * PS::Comm::getRank();
-         sph_system[ii] = ptcl[i];
+   for(PS::U32 j = 0 ; j < ptcl.size() ; ++j){
+      if(i_head <= j && j < i_tail){
+         const PS::U32 ii = j - numPtclLocal * PS::Comm::getRank();
+         sph_system[ii] = ptcl[j];
       }
    }
    // Set the end time
