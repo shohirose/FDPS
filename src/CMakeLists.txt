@@ -6,4 +6,6 @@ target_sources(FDPS
     functions.cpp
     comm.cpp
     time_profile.cpp
+    mpi/environment.cpp
+    mpi/communicator.cpp
   )

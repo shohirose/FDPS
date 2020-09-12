@@ -38,6 +38,8 @@ target_sources(FDPS
     comm.hpp
     comm_for_all_to_all.hpp
     time_profile.hpp
+    mpi/environment.hpp
+    mpi/communicator.hpp
   )
 
 # add_subdirectory(particle_mesh)
