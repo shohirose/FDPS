@@ -52,9 +52,10 @@ class Vector2 {
   // vector scholar products
   Vector2 operator*(const T s) const { return Vector2(x * s, y * s); }
 
-  const Vector2& operator*=(const T s) {
-    (*this) = (*this) * s;
-    return (*this);
+  Vector2& operator*=(const T s) {
+    this->x *= s;
+    this->y *= s;
+    return *this;
   }
 
   friend Vector2 operator*(const T s, const Vector2& v) { return (v * s); }
@@ -110,37 +111,6 @@ class Vector2 {
     return c;
   }
 
-#if 0
-        const T & operator[](const int i) const {
-#ifdef PARTICLE_SIMULATOR_VECTOR_RANGE_CHECK
-	    if(i >= DIM || i < 0){
-		std::cout<<"PS_ERROR: Vector invalid access. \n"<<"function: "<<__FUNCTION__<<", line: "<<__LINE__<<", file: "<<__FILE__<<std::endl;		
-		std::cerr<<"Vector element="<<i<<" is not valid."<<std::endl;
-#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
-		MPI_Abort(MPI_COMM_WORLD,-1);
-#else
-		exit(-1);
-#endif		
-	    }
-#endif
-            return (&x)[i];
-        }
-
-        T & operator[](const int i){
-#ifdef PARTICLE_SIMULATOR_VECTOR_RANGE_CHECK
-	    if(i >= DIM || i < 0){
-		std::cout<<"PS_ERROR: Vector invalid access. \n"<<"function: "<<__FUNCTION__<<", line: "<<__LINE__<<", file: "<<__FILE__<<std::endl;		
-		std::cerr<<"Vector element="<<i<<" is not valid."<<std::endl;
-#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
-		MPI_Abort(MPI_COMM_WORLD,-1);
-#else
-		exit(-1);
-#endif		
-	    }
-#endif	    
-            return (&x)[i];
-        }
-#else
   const T& operator[](const int i) const {
     if (0 == i) return x;
     if (1 == i) return y;
@@ -154,6 +124,7 @@ class Vector2 {
     exit(-1);
     return x;  // dummy for avoid warning
   }
+
   T& operator[](const int i) {
     if (0 == i) return x;
     if (1 == i) return y;
@@ -167,7 +138,6 @@ class Vector2 {
     exit(-1);
     return x;  // dummy for avoid warning
   }
-#endif
 
   T getDistanceSQ(const Vector2& u) const {
     T dx = x - u.x;
@@ -177,17 +147,5 @@ class Vector2 {
   bool operator==(const Vector2& u) const { return ((x == u.x) && (y == u.y)); }
   bool operator!=(const Vector2& u) const { return ((x != u.x) || (y != u.y)); }
 };
-
-template <>
-inline Vector2<float> Vector2<float>::operator/(const float s) const {
-  const float inv_s = 1.0f / s;
-  return Vector2(x * inv_s, y * inv_s);
-}
-
-template <>
-inline Vector2<double> Vector2<double>::operator/(const double s) const {
-  const double inv_s = 1.0 / s;
-  return Vector2(x * inv_s, y * inv_s);
-}
 
 }  // namespace ParticleSimulator

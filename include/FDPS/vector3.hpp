@@ -62,14 +62,16 @@ class Vector3 {
 
   Vector3 operator/(const T s) const { return Vector3(x / s, y / s, z / s); }
 
-  const Vector3& operator/=(const T s) {
-    (*this) = (*this) / s;
-    return (*this);
+  Vector3& operator/=(const T s) {
+    this->x *= s;
+    this->y *= s;
+    this->z *= s;
+    return *this;
   }
 
   const Vector3& operator+() const { return (*this); }
 
-  const Vector3 operator-() const { return Vector3(-x, -y, -z); }
+  Vector3 operator-() const { return Vector3(-x, -y, -z); }
 
   T operator*(const Vector3& rhs) const {
     return (x * rhs.x) + (y * rhs.y) + (z * rhs.z);
@@ -119,37 +121,6 @@ class Vector3 {
     return c;
   }
 
-#if 0
-        const T & operator[](const int i) const {
-#ifdef PARTICLE_SIMULATOR_VECTOR_RANGE_CHECK
-	    if(i >= DIM || i < 0){
-		std::cout<<"PS_ERROR: Vector invalid access. \n"<<"function: "<<__FUNCTION__<<", line: "<<__LINE__<<", file: "<<__FILE__<<std::endl;		
-		std::cerr<<"Vector element="<<i<<" is not valid."<<std::endl;
-#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
-		MPI_Abort(MPI_COMM_WORLD,-1);
-#else
-		exit(-1);
-#endif  // PARTICLE_SIMULATOR_MPI_PARALLEL
-	    }
-#endif  // PARTICLE_SIMULATOR_VECTOR_RANGE_CHECK
-            return (&x)[i];
-        }
-
-        T & operator[](const int i){
-#ifdef PARTICLE_SIMULATOR_VECTOR_RANGE_CHECK
-	    if(i >= DIM || i < 0){
-		std::cout<<"PS_ERROR: Vector invalid access. \n"<<"function: "<<__FUNCTION__<<", line: "<<__LINE__<<", file: "<<__FILE__<<std::endl;		
-		std::cerr<<"Vector element="<<i<<" is not valid."<<std::endl;
-#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
-		MPI_Abort(MPI_COMM_WORLD,-1);
-#else
-		exit(-1);
-#endif  // PARTICLE_SIMULATOR_MPI_PARALLEL		
-	    }
-#endif  // PARTICLE_SIMULATOR_VECTOR_RANGE_CHECK
-            return (&x)[i];
-        }
-#else   // #if 0
   const T& operator[](const int i) const {
     if (0 == i) return x;
     if (1 == i) return y;
@@ -180,7 +151,6 @@ class Vector3 {
     exit(-1);
     return x;  // dummy for avoid warning
   }
-#endif  // #if 0
 
   T getDistanceSQ(const Vector3& u) const {
     T dx = x - u.x;
@@ -194,27 +164,6 @@ class Vector3 {
   bool operator!=(const Vector3& u) const {
     return ((x != u.x) || (y != u.y) || (z != u.z));
   }
-
-  /*
-  Vector3 getDiagonal (const Vector3 & u) const {
-      return Vector3(x*u.x, y*u.y, z*u.z);
-  }
-  Vector3 getDiagonal (const Vector3<int> & u) const {
-      return Vector3(x*(T)(u.x), y*(T)(u.y), z*(T)(u.z));
-  }
-  */
 };
-
-template <>
-inline Vector3<float> Vector3<float>::operator/(const float s) const {
-  const float inv_s = 1.0f / s;
-  return Vector3(x * inv_s, y * inv_s, z * inv_s);
-}
-
-template <>
-inline Vector3<double> Vector3<double>::operator/(const double s) const {
-  const double inv_s = 1.0 / s;
-  return Vector3(x * inv_s, y * inv_s, z * inv_s);
-}
 
 }  // namespace ParticleSimulator
