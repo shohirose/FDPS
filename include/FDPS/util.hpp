@@ -1,3 +1,5 @@
+#ifndef FDPS_UTIL_HPP
+#define FDPS_UTIL_HPP
 
 namespace  ParticleSimulator{
     struct Cmpvec{
@@ -154,3 +156,5 @@ namespace  ParticleSimulator{
 #endif
     
 }
+
+#endif  // FDPS_UTIL_HPP
