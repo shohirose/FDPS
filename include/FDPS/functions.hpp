@@ -2,6 +2,7 @@
 #define FDPS_FUNCTIONS_HPP
 
 #include <cstdint>
+#include <iostream>
 
 namespace ParticleSimulator {
 
@@ -14,6 +15,9 @@ void Initialize(int& argc, char**& argv, int64_t memoryPoolSize = 100'000'000);
 ///
 /// This function calls MPI_Finalize().
 void Finalize();
+
+/// @brief Print license terms
+void PrintLicense(std::ostream& os);
 
 }  // namespace ParticleSimulator
 
