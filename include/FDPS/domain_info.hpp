@@ -9,8 +9,8 @@
 #include <mpi.h>
 #endif
 
-#include "FDPS/time_profile.hpp"
 #include "FDPS/comm.hpp"
+#include "FDPS/time_profile.hpp"
 
 namespace ParticleSimulator {
 
@@ -77,28 +77,6 @@ class DomainInfo {
   int rank_sub_[DIMENSION_LIMIT];
   int n_proc_sub_[DIMENSION_LIMIT];
 #endif
-  /*
-  void calculateBoundaryOfDomain(const S32 np,
-                                 const F64vec pos_sample[],
-                                 const S32 cid,
-                                 const S32 istart,
-                                 const S32 iend,
-                                 F64 & xlow,
-                                 F64 & xhigh) {
-      if(istart == 0) {
-          xlow  = pos_root_domain_.low_[cid];
-      }
-      else {
-          xlow  = 0.5 * (pos_sample[istart-1][cid] + pos_sample[istart][cid]);
-      }
-      if(iend == np - 1) {
-          xhigh = pos_root_domain_.high_[cid];
-      }
-      else {
-          xhigh = 0.5 * (pos_sample[iend][cid] + pos_sample[iend+1][cid]);
-      }
-  }
-  */
 
   void calculateBoundaryOfDomainX(const S32 np, const F64vec pos_sample[],
                                   const S32 istart, const S32 iend, F64 &xlow,
@@ -277,13 +255,6 @@ class DomainInfo {
   void collectSampleParticle(Tpsys &psys, const bool clear, const F32 weight) {
     F64 time_offset = GetWtime();
     if (psys.getFirstCallByDomainInfoCollectSampleParticle()) {
-      // if (Comm::getRank() == 0) {
-      //    std::cout << "weight = " << weight << std::endl;
-      //    std::cout << "target_number_of_sample_particle_ = "
-      //              << target_number_of_sample_particle_
-      //              << " RANK = " << Comm::getRank()
-      //              << std::endl;
-      //}
       F64vec *temp_loc = new F64vec[target_number_of_sample_particle_];
       for (S32 i = 0; i < number_of_sample_particle_loc_; i++)
         temp_loc[i] = pos_sample_loc_[i];
@@ -306,27 +277,6 @@ class DomainInfo {
                            &pos_sample_loc_[number_of_sample_particle_loc_],
                            weight);
     number_of_sample_particle_loc_ += number_of_sample_particle;
-    // if (Comm::getRank() == 0) {
-    //    std::cout << "number_of_sample_particle_loc_ = "
-    //              << number_of_sample_particle_loc_
-    //              << " number_of_sample_particle = "
-    //              << number_of_sample_particle
-    //              << " RANK = " << Comm::getRank()
-    //              << std::endl;
-    //    const std::string filename = "pos_sample_loc_.txt";
-    //    std::ofstream output_file;
-    //    output_file.open(filename.c_str(),std::ios::trunc);
-    //    output_file.setf(std::ios_base::scientific,
-    //                     std::ios_base::floatfield);
-    //    output_file << std::setprecision(15) << std::showpos;
-    //    for(S32 i = 0; i < number_of_sample_particle_loc_; i++) {
-    //        output_file << pos_sample_loc_[i].x << " "
-    //                    << pos_sample_loc_[i].y << " "
-    //                    << pos_sample_loc_[i].z << " "
-    //                    << std::endl;
-    //    }
-    //    output_file.close();
-    //}
     time_profile_.collect_sample_particle += GetWtime() - time_offset;
     return;
   }
@@ -343,88 +293,6 @@ class DomainInfo {
     const bool clear = true;
     collectSampleParticle(psys, clear, wgh);
   }
-
-  /*
-  void decomposeDomainHierarchy(){
-      F64 time_offset = GetWtime();
-#ifndef PARTICLE_SIMULATOR_MPI_PARALLEL
-      pos_domain_[0] = pos_root_domain_;
-#else //PARTICLE_SIMULATOR_MPI_PARALLEL
-      static bool first = true;
-      static F64vec * pos_sample_loc_tmp;
-      if(first){
-          pos_sample_loc_tmp = new F64vec[target_number_of_sample_particle_];
-      }
-      const S32 nynz = n_domain_[1] * n_domain_[2];
-      S32 n_smp = number_of_sample_particle_loc_ / nynz;
-      for(S32 i=0; i<n_smp; i++){
-          pos_sample_loc_tmp[i] = pos_sample_loc_[i*nynz];
-      }
-#ifdef __HPC_ACE__
-      Comm::allGather(&n_smp, 1, n_smp_array_);
-      n_smp_disp_array_[0] = 0;
-      for(S32 i=0; i<nproc; i++){
-          n_smp_disp_array_[i+1] = n_smp_disp_array_[i] + n_smp_array_[i];
-      }
-      Comm::allGatherV(pos_sample_loc_tmp, n_smp, pos_sample_tot_, n_smp_array_,
-n_smp_disp_array_); number_of_sample_particle_tot_ = n_smp_disp_array_[nproc];
-#else //__HPC_ACE__
-      Comm::gather(&n_smp, 1, n_smp_array_);
-      n_smp_disp_array_[0] = 0;
-      for(S32 i=0; i<nproc; i++){
-          n_smp_disp_array_[i+1] = n_smp_disp_array_[i] + n_smp_array_[i];
-      }
-      Comm::gatherV(pos_sample_loc_tmp, n_smp, pos_sample_tot_, n_smp_array_,
-n_smp_disp_array_); number_of_sample_particle_tot_ = n_smp_disp_array_[nproc];
-#endif //__HPC_ACE__
-      if(myrank == 0) {
-          S32 * istart = new S32[nproc];
-          S32 * iend   = new S32[nproc];
-          // --- x direction --------------------------
-          std::sort(pos_sample_loc_tmp,
-pos_sample_loc_tmp+number_of_sample_particle_tot_, LessOPX()); for(S32 i = 0; i
-< nproc; i++) { istart[i] = ((S64)(i) * (S64)(number_of_sample_particle_tot_)) /
-(S64)(nproc); if(i > 0) iend[i-1] = istart[i] - 1;
-          }
-          iend[nproc-1] = number_of_sample_particle_tot_ - 1;
-          for(S32 ix = 0; ix < n_domain_[0]; ix++) {
-              S32 ix0 =  ix      * n_domain_[1] * n_domain_[2];
-              S32 ix1 = (ix + 1) * n_domain_[1] * n_domain_[2];
-              F64 x0, x1;
-              calculateBoundaryOfDomain(number_of_sample_particle_tot_,
-pos_sample_tot_, 0, istart[ix0], iend[ix1-1], x0, x1); for(S32 i = ix0; i < ix1;
-i++) {
-                  //pos_domain_temp_[i].low_[0]  = x0;
-                  //pos_domain_temp_[i].high_[0] = x1;
-                  pos_domain_temp_[i].low_.x  = x0;
-                  pos_domain_temp_[i].high_.x = x1;
-              }
-          }
-          delete [] istart;
-          delete [] iend;
-      }
-      n_smp = number_of_sample_particle_loc_ / n_domain_[2];
-      if(rank_sub_[0] == 0) {
-#ifdef __HPC_ACE__
-          Comm::allGather(&n_smp, 1, n_smp_array_);
-          n_smp_disp_array_[0] = 0;
-          for(S32 i=0; i<nproc; i++){
-              n_smp_disp_array_[i+1] = n_smp_disp_array_[i] + n_smp_array_[i];
-          }
-          Comm::allGatherV(pos_sample_loc_tmp, n_smp, pos_sample_tot_,
-n_smp_array_, n_smp_disp_array_); number_of_sample_particle_tot_ =
-n_smp_disp_array_[nproc]; #else //__HPC_ACE__ Comm::gather(&n_smp, 1,
-n_smp_array_); n_smp_disp_array_[0] = 0; for(S32 i=0; i<nproc; i++){
-              n_smp_disp_array_[i+1] = n_smp_disp_array_[i] + n_smp_array_[i];
-          }
-          Comm::gatherV(pos_sample_loc_tmp, n_smp, pos_sample_tot_,
-n_smp_array_, n_smp_disp_array_); number_of_sample_particle_tot_ =
-n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
-      }
-#endif //PARTICLE_SIMULATOR_MPI_PARALLEL
-      time_profile_.decompose_domain = GetWtime() - time_offset;
-  }
-  */
 
 #if 1  // UNDER_CONSTRUCTION
        // new version multi-dimensional gathering
@@ -466,8 +334,6 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
       first = false;
     }
 
-    // std::cout<<"rank_glb="<<rank_glb<<"
-    // number_of_sample_particle_loc_="<<number_of_sample_particle_loc_<<std::endl;
     ///////////// sort particles along x direction
     std::sort(pos_sample_loc_, pos_sample_loc_ + number_of_sample_particle_loc_,
               LessOPX());
@@ -480,13 +346,9 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
       while (pos_domain_[id_domain_3d].high_.x <= pos_sample_loc_[i].x) {
         id_domain_3d += n_proc_sub_[0];
         id_domain_x++;
-        // std::cout<<"rank_glb="<<rank_glb<<"
-        // id_domain_3d="<<id_domain_3d<<std::endl;
       }
       n_send[id_domain_x]++;
     }
-    // for(S32 i=0; i<n_domain_[0]; i++)std::cout<<"rank_glb="<<rank_glb<<"
-    // n_send[i]="<<n_send[i]<<std::endl;
     MPI_Alltoall(n_send, 1, GetDataType<S32>(), n_recv, 1, GetDataType<S32>(),
                  comm_1d_[0]);
     n_send_disp[0] = n_recv_disp[0] = 0;
@@ -497,8 +359,6 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
     MPI_Alltoallv(pos_sample_loc_, n_send, n_send_disp, GetDataType<F64vec>(),
                   pos_sample_buf, n_recv, n_recv_disp, GetDataType<F64vec>(),
                   comm_1d_[0]);
-    // std::cout<<"rank_glb="<<rank_glb<<"
-    // n_recv_disp[n_domain_[0]]="<<n_recv_disp[n_domain_[0]]<<std::endl;
 
     ///////////// allgather particles in Y-Z plane
     S32 n_send_tmp = n_recv_disp[n_domain_[0]];  // # of particle in own cell.
@@ -509,21 +369,13 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
       n_recv_disp[i + 1] = n_recv_disp[i] + n_recv[i];
     }
     S32 n_par_slab = n_recv_disp[n_proc_sub_[0]];
-    // std::cout<<"rank_glb="<<rank_glb<<" n_par_slab="<<n_par_slab<<std::endl;
+
     MPI_Allgatherv(pos_sample_buf, n_send_tmp, GetDataType<F64vec>(),
                    pos_sample_tot_, n_recv, n_recv_disp, GetDataType<F64vec>(),
                    comm_sub_[0]);
 
     ///////////// sort particles along x direction again
     std::sort(pos_sample_tot_, pos_sample_tot_ + n_par_slab, LessOPX());
-    /*
-    if(Comm::getRank() == 1){
-        std::cout<<"pos_domain_[Comm::getRank()]="<<pos_domain_[Comm::getRank()]<<std::endl;
-        for(S32 i=0; i<n_par_slab; i++){
-            std::cout<<"pos_sample_tot_[i]="<<pos_sample_tot_[i]<<std::endl;
-        }
-    }
-    */
     ///////////// determine X coord
     MPI_Allgather(&n_par_slab, 1, GetDataType<S32>(), n_recv, 1,
                   GetDataType<S32>(), comm_1d_[0]);
@@ -532,8 +384,6 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
       n_recv_disp[i + 1] = n_recv_disp[i] + n_recv[i];
     }
     number_of_sample_particle_tot_ = n_recv_disp[n_domain_[0]];
-    // std::cout<<"rank_glb="<<rank_glb<<"
-    // number_of_sample_particle_tot_="<<number_of_sample_particle_tot_<<std::endl;
 
     // get index of
     S32 n_ave = number_of_sample_particle_tot_ / n_domain_[0];
@@ -547,12 +397,7 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
       if (i > 0) i_tail[i - 1] = i_head[i] - 1;
     }
     i_tail[n_domain_[0] - 1] = number_of_sample_particle_tot_ - 1;
-    /*
-                if(Comm::getRank() == 1){
-                    for(S32 i=0; i<n_domain_[0]; i++)
-       std::cout<<"i_head[i]="<<i_head[i]<<" i_tail[i]="<<i_tail[i]<<std::endl;
-                }
-    */
+
     n_send_tmp = 0;  // temporally used
     for (S32 i = 0; i < n_domain_[0]; i++) {
       if (n_recv_disp[rank_1d_[0]] <= i_head[i] &&
@@ -566,8 +411,6 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
         coord_buf[n_send_tmp++] = pos_sample_tot_[i_tmp].x;
       }
     }
-    // for(S32 i=0; i<n_send_tmp; i++) std::cout<<"rank_glb="<<rank_glb<<"
-    // coord_buf[i]="<<coord_buf[i]<<std::endl;
 
     MPI_Allgather(&n_send_tmp, 1, GetDataType<S32>(), n_recv, 1,
                   GetDataType<S32>(), comm_1d_[0]);
@@ -575,8 +418,6 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
     for (S32 i = 0; i < n_domain_[0]; i++) {
       n_recv_disp[i + 1] = n_recv_disp[i] + n_recv[i];
     }
-    // std::cout<<"rank_glb="<<rank_glb<<"
-    // n_recv_disp[n_domain_[0]]="<<n_recv_disp[n_domain_[0]]<<std::endl;
 
     MPI_Allgatherv(coord_buf, n_send_tmp, GetDataType<>(coord_buf[0]),
                    coord_tot, n_recv, n_recv_disp, GetDataType<>(coord_buf[0]),
@@ -584,37 +425,13 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
 
     assert(n_recv_disp[n_domain_[0]] == n_domain_[0] * 2);
 
-    /*
-                if(rank_glb == 1){
-                //for(S32 i=0; i<n_send_tmp; i++)
-       std::cout<<"coord_buf[i]="<<coord_buf[i]<<std::endl; for(S32 i=0;
-       i<n_domain_[0]*2; i++)
-       std::cout<<"coord_tot[i]="<<coord_tot[i]<<std::endl;
-                }
-    */
-
     // size of x_coord_buf is n_domain_[0]+1
     x_coord[0] = pos_root_domain_.low_.x;
     x_coord[n_domain_[0]] = pos_root_domain_.high_.x;
 
     for (S32 i = 1; i < n_domain_[0]; i++) {
       x_coord[i] = (coord_tot[i * 2] + coord_tot[i * 2 - 1]) * 0.5;
-      /*
-                  if(rank_glb == 1){
-                      std::cout<<"i="<<i<<std::endl;
-                      std::cout<<"coord_tot[i*2-1]="<<coord_tot[i*2-1]<<std::endl;
-                      std::cout<<"coord_tot[i*2]="<<coord_tot[i*2]<<std::endl;
-                      std::cout<<"x_coord[i]="<<x_coord[i]<<std::endl;
-                  }
-      */
     }
-
-    /*
-                if(rank_glb == 1){
-                for(S32 i=0; i<n_domain_[0]+1; i++)
-       std::cout<<"x_coord[i]="<<x_coord[i]<<std::endl;
-                }
-    */
 
     ///////////// migrate particles along x direction
     for (S32 i = 0; i < n_domain_[0]; i++) n_send[i] = n_recv[i] = 0;
@@ -623,8 +440,6 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
       while (x_coord[id_domain_x + 1] <= pos_sample_tot_[i].x) id_domain_x++;
       n_send[id_domain_x]++;
     }
-    // for(S32 i=0; i<n_domain_[0]; i++)std::cout<<"rank_glb="<<rank_glb<<"
-    // n_send[i]="<<n_send[i]<<std::endl;
 
     MPI_Alltoall(n_send, 1, GetDataType<S32>(), n_recv, 1, GetDataType<S32>(),
                  comm_1d_[0]);
@@ -636,10 +451,7 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
     MPI_Alltoallv(pos_sample_tot_, n_send, n_send_disp, GetDataType<F64vec>(),
                   pos_sample_buf, n_recv, n_recv_disp, GetDataType<F64vec>(),
                   comm_1d_[0]);
-    // std::cout<<"rank_glb="<<rank_glb<<" n_par_slab="<<n_par_slab<<"
-    // n_recv_disp[n_domain_[0]]="<<n_recv_disp[n_domain_[0]]<<std::endl;
     n_par_slab = n_recv_disp[n_domain_[0]];
-    // OK
 
     ////////////////////////////////////
     ///////////// determine y corrdinate
@@ -656,12 +468,6 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
       if (i > 0) i_tail[i - 1] = i_head[i] - 1;
     }
     i_tail[n_domain_[1] - 1] = n_par_slab - 1;
-    /*
-    if(Comm::getRank() == 0){
-        for(S32 i=0; i<n_domain_[1]; i++) std::cout<<"i_head[i]="<<i_head[i]<<"
-    i_tail[i]="<<i_tail[i]<<std::endl;
-    }
-    */
 
     // size of y_coord is n_domain_[1]+1
     y_coord[0] = pos_root_domain_.low_.y;
@@ -669,9 +475,6 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
     for (S32 i = 1; i < n_domain_[1]; i++)
       y_coord[i] =
           (pos_sample_buf[i_head[i]].y + pos_sample_buf[i_tail[i - 1]].y) * 0.5;
-
-      // if(Comm::getRank() == 0) for(S32 i=0; i<n_domain_[1]+1; i++)
-      // std::cout<<"y_coord[i]="<<y_coord[i]<<std::endl;
 
 #ifndef PARTICLE_SIMULATOR_TWO_DIMENSION
     ////////////////////////////////////
@@ -683,13 +486,7 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
       const S32 nz_tot = iy_ptcl_tail - iy_ptcl_head + 1;
       std::sort(pos_sample_buf + iy_ptcl_head,
                 pos_sample_buf + iy_ptcl_head + nz_tot, LessOPZ());
-      /*
-                      if(Comm::getRank() == 0){
-                          for(S32 i=0; i<nz_tot; i++){
-                              std::cout<<"pos_sample_buf[iy_ptcl_head+i]="<<pos_sample_buf[iy_ptcl_head+i]<<std::endl;
-                          }
-                      }
-      */
+
       S32 nz_ave_tmp = nz_tot / n_domain_[2];
       pos_domain_temp_buf[iy * n_domain_[2]].low_.z = pos_root_domain_.low_.z;
       pos_domain_temp_buf[(iy + 1) * n_domain_[2] - 1].high_.z =
@@ -707,12 +504,7 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
         F64 z_coord_tmp = (pos_sample_buf[iy_ptcl_head + iz_tmp].z +
                            pos_sample_buf[iy_ptcl_head + iz_tmp - 1].z) *
                           0.5;
-        /*
-                            if(Comm::getRank() == 0){
-                                std::cout<<"iz_tmp="<<iz_tmp<<"
-           z_coord_tmp="<<z_coord_tmp<<std::endl;
-                            }
-        */
+
         pos_domain_temp_buf[iy * n_domain_[2] + iz].low_.z = z_coord_tmp;
         pos_domain_temp_buf[iy * n_domain_[2] + iz - 1].high_.z = z_coord_tmp;
       }
@@ -723,62 +515,32 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
       pos_domain_temp_buf[i].high_.x = x_coord[rank_1d_[0] + 1];
     }
 
-    /*
-                if(Comm::getRank() == 4){
-                for(S32 i=0; i<n_proc_sub_[0]; i++){
-                    std::cout<<"pos_domain_temp_buf[i]="<<pos_domain_temp_buf[i]<<std::endl;
-                }
-                }
-    */
     //////////////////////////////////////////////
     ///////////// exchange pos_domain_tmp
     MPI_Allgather(pos_domain_temp_buf, n_proc_sub_[0], GetDataType<F64ort>(),
                   pos_domain_temp_, n_proc_sub_[0], GetDataType<F64ort>(),
                   comm_1d_[0]);
 
-    /*
-                if(Comm::getRank() == 0){
-                for(S32 i=0; i<Comm::getNumberOfProc(); i++){
-                    std::cout<<"pos_domain_temp_[i]="<<pos_domain_temp_[i]<<std::endl;
-                }
-                }
-    */
-    /*
-                for(S32 i = 0; i < n_proc_glb; i++) {
-                pos_domain_[i].low_  = pos_domain_temp_[i].low_;
-                pos_domain_[i].high_ = pos_domain_temp_[i].high_;
-                }
-    */
-
     if (first_call_by_decomposeDomain) {
       first_call_by_decomposeDomain = false;
       for (S32 i = 0; i < n_proc_glb; i++) {
-        // std::cout<<"pos_domain_temp_[i](first)=
-        // "<<pos_domain_temp_[i]<<std::endl;
         pos_domain_[i].low_ = pos_domain_temp_[i].low_;
         pos_domain_[i].high_ = pos_domain_temp_[i].high_;
       }
     } else {
       for (S32 i = 0; i < n_proc_glb; i++) {
-        // std::cout<<"pos_domain_temp_[i](other)=
-        // "<<pos_domain_temp_[i]<<std::endl;
         pos_domain_[i].low_ = (F64)coef_ema_ * pos_domain_temp_[i].low_ +
                               (F64)(1. - coef_ema_) * pos_domain_[i].low_;
         pos_domain_[i].high_ = (F64)coef_ema_ * pos_domain_temp_[i].high_ +
                                (F64)(1. - coef_ema_) * pos_domain_[i].high_;
       }
     }
-    // time_profile_.decompose_domain += GetWtime() - time_offset;
 #endif  // PARTICLE_SIMULATOR_MPI_PARALLEL
     time_profile_.decompose_domain = GetWtime() - time_offset;
   }
 #endif  // UNDER_CONSTRUCTION
 
   void decomposeDomain() {
-    // Comm::barrier();
-    // std::cerr<<"CHECK 0"<<std::endl;
-    // Comm::barrier();
-
     F64 time_offset = GetWtime();
     // ****** collect sample particles to process 0. ******
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
@@ -794,47 +556,18 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
                      pos_sample_tot_, n_smp_array_, n_smp_disp_array_);
     number_of_sample_particle_tot_ = n_smp_disp_array_[nproc];
 #else   //__HPC_ACE__
-
-    // Comm::barrier();
-    // std::cerr<<"CHECK A number_of_sample_particle_loc_=
-    // "<<number_of_sample_particle_loc_<<std::endl; Comm::barrier();
-
-    // Comm::gather(&number_of_sample_particle_loc_, 1, n_smp_array_);
     Comm::allGather(&number_of_sample_particle_loc_, 1, n_smp_array_);
-
-    // Comm::barrier();
-    // std::cerr<<"CHECK B"<<std::endl;
-    // for(S32 i=0; i<nproc+1; i++){
-    //    std::cerr<<"n_smp_disp_array_[i]= "<<n_smp_disp_array_[i]<<std::endl;
-    //}
-    // for(S32 i=0; i<nproc; i++){
-    //    std::cerr<<"n_smp_array_[i]= "<<n_smp_array_[i]<<std::endl;
-    //}
-    // Comm::barrier();
 
     n_smp_disp_array_[0] = 0;
     for (S32 i = 0; i < nproc; i++) {
       n_smp_disp_array_[i + 1] = n_smp_disp_array_[i] + n_smp_array_[i];
     }
 
-    // Comm::barrier();
-    // for(S32 i=0; i<nproc+1; i++){
-    //     std::cerr<<"n_smp_disp_array_[i]= "<<n_smp_disp_array_[i]<<std::endl;
-    //}
-    // std::cerr<<"CHECK C"<<std::endl;
-    // Comm::barrier();
-
     Comm::allGatherV(pos_sample_loc_, number_of_sample_particle_loc_,
                      pos_sample_tot_, n_smp_array_, n_smp_disp_array_);
-    // Comm::gatherV(pos_sample_loc_, number_of_sample_particle_loc_,
-    // pos_sample_tot_, n_smp_array_, n_smp_disp_array_);
 
     number_of_sample_particle_tot_ = n_smp_disp_array_[nproc];
 #endif  //__HPC_ACE__
-
-    // Comm::barrier();
-    // std::cerr<<"CHECK D"<<std::endl;
-    // Comm::barrier();
 
     // ****************************************************
     // *** decompose domain *******************************
@@ -856,8 +589,6 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
         S32 ix1 = (ix + 1) * n_domain_[1] * n_domain_[2];
         F64 x0 = 0.0;
         F64 x1 = 0.0;
-        // calculateBoundaryOfDomain(number_of_sample_particle_tot_,
-        // pos_sample_tot_, 0, istart[ix0], iend[ix1-1], x0, x1);
         calculateBoundaryOfDomainX(number_of_sample_particle_tot_,
                                    pos_sample_tot_, istart[ix0], iend[ix1 - 1],
                                    x0, x1);
@@ -871,20 +602,8 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
       for (S32 ix = 0; ix < n_domain_[0]; ix++) {
         S32 ix0 = ix * n_domain_[1] * n_domain_[2];
         S32 ix1 = (ix + 1) * n_domain_[1] * n_domain_[2];
-        // sortCoordinateOfSampleParticle(pos_sample_tot_, istart[ix0],
-        // iend[ix1-1], 1);
         std::sort(pos_sample_tot_ + istart[ix0],
                   pos_sample_tot_ + (iend[ix1 - 1] + 1), Cmpvec(&F64vec::y));
-        /*
-                            for(S32 i=istart[ix0]; i<iend[ix1-1]+1; i++){
-                                if(pos_sample_tot_[i+1].y <
-           pos_sample_tot_[i].y){ std::cout<<"y sort is wrong:
-           i="<<i<<std::endl;
-                                    std::cout<<"pos_sample_tot_[i+1]="<<pos_sample_tot_[i+1]<<std::endl;
-                                    std::cout<<"pos_sample_tot_[i]="<<pos_sample_tot_[i]<<std::endl;
-                                }
-                            }
-        */
         S32 number_of_sample_particle_tot_y = iend[ix1 - 1] - istart[ix0] + 1;
         for (S32 iy = 0; iy < n_domain_[1]; iy++) {
           S32 iy0 = ix0 + iy * n_domain_[2];
@@ -892,11 +611,7 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
           // F64 y0, y1;
           F64 y0 = 0.0;
           F64 y1 = 0.0;
-          // std::cout<<"ix="<<ix<<" ix0="<<ix0<<" ix1="<<ix1<<" iy="<<iy<<"
-          // iy0="<<iy0<<" iy1="<<iy1<<" y0="<<y0<<" y1="<<y1<<std::endl;
-          // calculateBoundaryOfDomain(number_of_sample_particle_tot_y,
-          // pos_sample_tot_+istart[ix0], 1, istart[iy0]-istart[ix0],
-          // iend[iy1-1]-istart[ix0], y0, y1);
+
           calculateBoundaryOfDomainY(
               number_of_sample_particle_tot_y, pos_sample_tot_ + istart[ix0],
               istart[iy0] - istart[ix0], iend[iy1 - 1] - istart[ix0], y0, y1);
@@ -914,8 +629,7 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
         for (S32 iy = 0; iy < n_domain_[1]; iy++) {
           S32 iy0 = ix0 + iy * n_domain_[2];
           S32 iy1 = ix0 + (iy + 1) * n_domain_[2];
-          // sortCoordinateOfSampleParticle(pos_sample_tot_, istart[iy0],
-          // iend[iy1-1], 2);
+
           std::sort(pos_sample_tot_ + istart[iy0],
                     pos_sample_tot_ + (iend[iy1 - 1] + 1), Cmpvec(&F64vec::z));
           S32 number_of_sample_particle_tot_z = iend[iy1 - 1] - istart[iy0] + 1;
@@ -924,9 +638,7 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
             // F64 z0, z1;
             F64 z0 = 0.0;
             F64 z1 = 0.0;
-            // calculateBoundaryOfDomain(number_of_sample_particle_tot_z,
-            // pos_sample_tot_+istart[iy0], 2, istart[iz0]-istart[iy0],
-            // iend[iz0]-istart[iy0], z0, z1);
+
             calculateBoundaryOfDomainZ(
                 number_of_sample_particle_tot_z, pos_sample_tot_ + istart[iy0],
                 istart[iz0] - istart[iy0], iend[iz0] - istart[iy0], z0, z1);
@@ -939,17 +651,12 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
         // ------------------------------------------
         // --- process first ------------------------
       if (first_call_by_decomposeDomain) {
-        // first_call_by_decomposeDomain = false;
         for (S32 i = 0; i < nproc; i++) {
-          // std::cout<<"pos_domain_temp_[i](first)=
-          // "<<pos_domain_temp_[i]<<std::endl;
           pos_domain_[i].low_ = pos_domain_temp_[i].low_;
           pos_domain_[i].high_ = pos_domain_temp_[i].high_;
         }
       } else {
         for (S32 i = 0; i < nproc; i++) {
-          // std::cout<<"pos_domain_temp_[i](other)=
-          // "<<pos_domain_temp_[i]<<std::endl;
           pos_domain_[i].low_ = (F64)coef_ema_ * pos_domain_temp_[i].low_ +
                                 (F64)(1. - coef_ema_) * pos_domain_[i].low_;
           pos_domain_[i].high_ = (F64)coef_ema_ * pos_domain_temp_[i].high_ +
@@ -968,8 +675,6 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
       MPI_Bcast(&first_call_by_decomposeDomain, 1, GetDataType<bool>(), 0,
                 MPI_COMM_WORLD);
     }
-    // std::cout<<"end of bcast: "<<"time: "<<GetWtime() - Tbegin<<std::endl;
-    // Comm::broadcast(pos_domain_, nproc);
     // ****************************************************
 #else   // PARTICLE_SIMULATOR_MPI_PARALLEL
     pos_domain_[0] = pos_root_domain_;
@@ -983,167 +688,6 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
     time_profile_.decompose_domain += GetWtime() - time_offset;
   }
 
-//#if __cplusplus <= 201112L
-#ifdef TEST_VARIADIC_TEMPLATE
-
-#if 0   // variadic template version
-        F32 sample_weight_;
-        bool flag_sample_weight_;
-        bool flag_first_sample_;
-        // variadic template version
-        template<class Tail>
-        void checkWeightLast(const Tail & tail, std::true_type){
-            // sample_weight is defined
-            sample_weight_ = tail;
-            flag_sample_weight_ = true;
-        }
-        template<class Tail>
-        void checkWeightLast(Tail & tail, std::false_type){
-            // sample_weight is not defined
-            flag_sample_weight_ = false;
-        }
-        template<class Tail>
-        void checkWeight(const Tail & tail){
-            checkWeightLast(tail, typename std::is_convertible<Tail, F32>::type() );
-        }
-        template<class Head, class... Tail>
-        void checkWeight(const Head & head, const Tail&... tail){
-            checkWeight(tail...);
-        }
-        template<class Tail>
-        void collectSampleParticleLast(const Tail & tail, std::true_type){
-            // last argument is not a particle_system class
-            // do nothing
-            //std::cerr<<"weight is defined"<<std::endl;
-        }
-        template<class Tail>
-        void collectSampleParticleLast(Tail & tail, std::false_type){
-            // last argument is a particle_system class
-            //std::cerr<<"no weight"<<std::endl;
-            collectSampleParticle(tail, false);
-        }
-        template<class Tail>
-        void collectSampleParticleRecursive(Tail & tail){
-            collectSampleParticleLast(tail, typename std::is_convertible<Tail, F32>::type() );
-        }
-        template<class Head, class ... Tail>
-        void collectSampleParticleRecursive(Head & head, Tail& ... tail){
-            bool flag_clear = false;
-            if(!flag_sample_weight_){sample_weight_ = head.getNumberOfParticleLocal();}
-            if(flag_first_sample_){
-                flag_clear = true;
-                flag_first_sample_ = false;
-            }
-            collectSampleParticle(head, flag_clear, sample_weight_);
-            collectSampleParticleRecursive(tail ...);
-        }
-        template<class ... Args>
-        void decomposeDomainAll(Args & ... args){
-            checkWeight(args ...);
-            flag_first_sample_ = true;
-            collectSampleParticleRecursive(args...);
-            decomposeDomain();
-        }
-#endif  // variadic template version
-        // tuple version
-#if 0
-        // use class
-        template<int N, class Ttpl, class Head, class ... Tail>
-        class CollectSampleParticleTplRecursive{
-        public:
-            void operator () (Ttpl & sys_tpl, F32 wgh, bool & flag_first_sample, DomainInfo * dinfo){
-                std::cerr<<"wgh= "<<wgh<<std::endl;
-                bool flag_clear = false;
-                if(flag_first_sample){
-                    flag_clear = true;
-                    flag_first_sample = false;
-                }
-                dinfo->collectSampleParticle(*(std::get<N>(sys_tpl)), flag_clear, wgh);
-                CollectSampleParticleTplRecursive<N+1, Ttpl, Tail...>()(sys_tpl, wgh, flag_first_sample, dinfo);
-            }
-            void operator () (Ttpl & sys_tpl, bool & flag_first_sample, DomainInfo * dinfo){
-                bool flag_clear = false;
-                if(flag_first_sample){
-                    flag_clear = true;
-                    flag_first_sample = false;
-                }
-                F32 wgh = std::get<N>(sys_tpl)->getNumberOfParticleLocal();
-                dinfo->collectSampleParticle(*(std::get<N>(sys_tpl)), flag_clear, wgh);
-                CollectSampleParticleTplRecursive<N+1, Ttpl, Tail...>()(sys_tpl, flag_first_sample, dinfo);
-            }
-        };
-        template<int N, class Ttpl, class Tail>
-        class CollectSampleParticleTplRecursive<N, Ttpl, Tail>{
-        public:
-            void operator () (Ttpl & sys_tpl, F32 wgh, bool & flag_first_sample, DomainInfo * dinfo){}
-            void operator () (Ttpl & sys_tpl, bool & flag_first_sample, DomainInfo * dinfo){}
-        };
-        template<class ... Args>
-        void decomposeDomainAll(std::tuple<Args...> & sys_tpl,
-                                F32 wgh){
-            flag_first_sample_ = true;
-            CollectSampleParticleTplRecursive<0, std::tuple<Args...>, Args... >()(sys_tpl, wgh, flag_first_sample_, this);
-            decomposeDomain();
-        }
-        template<class ... Args>
-        void decomposeDomainAll(std::tuple<Args...> & sys_tpl){
-            flag_first_sample_ = true;
-            CollectSampleParticleTplRecursive<0, std::tuple<Args...>, Args... >()(sys_tpl, flag_first_sample_, this);
-            decomposeDomain();
-        }
-#else
-  template <int N, class Ttpl>
-  void collectSampleParticleTplRecursive(Ttpl &sys_tpl, F32 wgh) {}
-  template <int N, class Ttpl, class Head, class... Tail>
-  void collectSampleParticleTplRecursive(Ttpl &sys_tpl, F32 wgh) {
-    bool flag_clear = false;
-    if (N == 0) {
-      flag_clear = true;
-    }
-    collectSampleParticle(std::get<N>(sys_tpl), flag_clear, wgh);
-    collectSampleParticleTplRecursive<N + 1, Ttpl, Tail...>(sys_tpl, wgh);
-  }
-  template <int N, class Ttpl>
-  void collectSampleParticleTplRecursive(Ttpl &sys_tpl) {}
-  template <int N, class Ttpl, class Head, class... Tail>
-  void collectSampleParticleTplRecursive(Ttpl &sys_tpl) {
-    bool flag_clear = false;
-    if (N == 0) {
-      flag_clear = true;
-    }
-    F32 wgh = std::get<N>(sys_tpl).getNumberOfParticleLocal();
-    collectSampleParticle(std::get<N>(sys_tpl), flag_clear, wgh);
-    collectSampleParticleTplRecursive<N + 1, Ttpl, Tail...>(sys_tpl);
-  }
-  template <class... Args>
-  void decomposeDomainAll(std::tuple<Args...> &sys_tpl, F32 wgh) {
-    collectSampleParticleTplRecursive<0, std::tuple<Args...>, Args...>(sys_tpl,
-                                                                       wgh);
-    decomposeDomain();
-  }
-  template <class... Args>
-  void decomposeDomainAll(std::tuple<Args...> &sys_tpl) {
-    collectSampleParticleTplRecursive<0, std::tuple<Args...>, Args...>(sys_tpl);
-    decomposeDomain();
-  }
-#endif
-  /*
-  template<class Tpsys>
-  void decomposeDomainAll(Tpsys & psys,
-                          const F32 wgh){
-      const bool clear = true;
-      collectSampleParticle(psys, clear, wgh);
-      decomposeDomain();
-  }
-  template<class Tpsys>
-  void decomposeDomainAll(Tpsys & psys){
-      const F32 wgh = psys.getNumberOfParticleLocal();
-      const bool clear = true;
-      collectSampleParticle(psys, clear, wgh);
-      decomposeDomain();
-  }
-  */
-#endif
   template <class Tpsys>
   void decomposeDomainAll(Tpsys &psys, const F32 wgh) {
     const bool clear = true;
@@ -1204,22 +748,11 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
 
   S32 *getPointerOfNDomain() { return n_domain_; };
 
-  /* AT_DEBUG
-  F32ort * getPointerOfPosDomain(){return pos_domain_;};
-  */
   F64ort *getPointerOfPosDomain() { return pos_domain_; };
 
   // A. Tanikawa need this method for Particle Mesh...
   S32 getNDomain(const S32 dim) const { return n_domain_[dim]; };
 
-  /* AT_DEBUG
-  // for DEBUG
-  F32vec & getPosSample(const S32 id=0){return pos_sample_tot_[id];}
-  // for DEBUG // A. Tanikawa would not like to delete this method...
-  F32ort & getPosDomain(const S32 id=0) const {return pos_domain_[id];}
-  // for DEBUG
-  void setPosDomain(const S32 id, const F32ort & pos){ pos_domain_[id] = pos;}
-  */
   // for DEBUG
   F64vec &getPosSample(const S32 id = 0) { return pos_sample_tot_[id]; }
   // for DEBUG // A. Tanikawa would not like to delete this method...
@@ -1228,12 +761,6 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
   void setPosDomain(const S32 id, const F64ort &pos) { pos_domain_[id] = pos; }
 
   void setBoundaryCondition(enum BOUNDARY_CONDITION bc) {
-    /*
-    std::cerr<<"bc= "<<bc
-             <<" BOUNDARY_CONDITION_PERIODIC_XY=
-    "<<BOUNDARY_CONDITION_PERIODIC_XY
-             <<std::endl;
-    */
     boundary_condition_ = bc;
     if (DIMENSION == 2 && (bc == BOUNDARY_CONDITION_PERIODIC_XYZ ||
                            bc == BOUNDARY_CONDITION_PERIODIC_XZ ||
@@ -1259,9 +786,6 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
 
   S32 getBoundaryCondition() const { return boundary_condition_; }
 
-  /* AT_DEBUG
-  void setPosRootDomain(const F32vec & low, const F32vec & high){
-  */
   void setPosRootDomain(const F64vec &low, const F64vec &high) {
     for (S32 k = 0; k < DIMENSION; k++) {
       if (low[k] > high[k]) {
@@ -1276,10 +800,6 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
     }
 
     for (S32 i = 0; i < DIMENSION; i++) {
-      // std::cerr<<"low[i]="<<low[i]<<std::endl;
-      // std::cerr<<"high[i]="<<high[i]<<std::endl;
-      // std::cerr<<"periodic_axis_[i]="<<periodic_axis_[i]<<std::endl;
-
       if (periodic_axis_[i] == false) continue;
       if (low[i] < high[i]) {
         pos_root_domain_.low_[i] = low[i];
@@ -1288,9 +808,6 @@ n_smp_disp_array_[nproc]; #endif //__HPC_ACE__
     }
   }
 
-  /* AT_DEBUG
-  F32ort getPosRootDomain() const { return pos_root_domain_; }
-  */
   const F64ort getPosRootDomain() const { return pos_root_domain_; }
 
   void getPeriodicAxis(bool pa[]) const {
