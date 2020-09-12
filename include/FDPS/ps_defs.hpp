@@ -81,7 +81,7 @@ static inline void Abort(const int err = -1) {
 }
 }  // namespace ParticleSimulator
 
-#include "reallocatable_array.hpp"
+#include "FDPS/reallocatable_array.hpp"
 
 namespace ParticleSimulator {
 typedef int S32;
@@ -959,6 +959,7 @@ class Comm {
 
 };  // END OF Comm
 
+/*
 static inline void Initialize(int &argc, char **&argv,
                               const S64 mpool_size = 100000000) {
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
@@ -1055,6 +1056,7 @@ static inline void Finalize() {
     }
   }
 }
+*/
 
 template <>
 inline float Comm::getMinValue<float>(const float &val) {
