@@ -1,6 +1,7 @@
 #pragma once
 
-#include "FDPS/particle_simulator.hpp"
+#include "FDPS/ps_defs.hpp"
+#include "FDPS/reallocatable_array.hpp"
 
 namespace ParticleSimulator {
 
