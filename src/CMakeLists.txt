@@ -3,4 +3,5 @@ target_sources(FDPS
     io.cpp
     key.cpp
     memory_pool.cpp
+    functions.cpp
   )

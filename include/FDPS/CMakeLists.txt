@@ -34,6 +34,7 @@ target_sources(FDPS
     util.hpp
     vector2.hpp
     vector3.hpp
+    functions.hpp
   )
 
 # add_subdirectory(particle_mesh)
