@@ -7,6 +7,7 @@ target_sources(FDPS
     comm.cpp
     time_profile.cpp
     mersenne_twister.cpp
+    domain_info.cpp
     mpi/environment.cpp
     mpi/communicator.cpp
   )
