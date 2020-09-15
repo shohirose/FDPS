@@ -3,6 +3,8 @@ project(FDPS CXX)
 
 cmake_policy(SET CMP0076 NEW)
 
+find_package(MPI)
+
 add_library(FDPS)
 target_include_directories(FDPS PUBLIC include)
 target_compile_features(FDPS
@@ -13,6 +15,14 @@ target_compile_features(FDPS
     # cxx_std_14
     # C++17
     cxx_std_17
+  )
+target_compile_definitions(FDPS
+  PUBLIC
+    $<$<BOOL:${MPI_FOUND}>:PARTICLE_SIMULATOR_MPI_PARALLEL>
+  )
+target_link_libraries(FDPS
+  PUBLIC
+    $<$<BOOL:${MPI_FOUND}>:MPI::MPI_CXX>
   )
 add_subdirectory(include/FDPS)
 add_subdirectory(src)
