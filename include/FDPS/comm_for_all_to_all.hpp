@@ -1,6 +1,9 @@
 #ifndef FDPS_COMM_FOR_ALL_TO_ALL_HPP
 #define FDPS_COMM_FOR_ALL_TO_ALL_HPP
 
+#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
+#include <mpi.h>
+#endif
 
 namespace ParticleSimulator
 {

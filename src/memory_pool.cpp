@@ -4,6 +4,10 @@
 #include <omp.h>
 #endif
 
+#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
+#include <mpi.h>
+#endif
+
 namespace ParticleSimulator {
 
 MemoryPool &MemoryPool::getInstance() noexcept {

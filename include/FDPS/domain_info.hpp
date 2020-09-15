@@ -11,6 +11,8 @@
 
 #include "FDPS/comm.hpp"
 #include "FDPS/time_profile.hpp"
+#include "FDPS/comm_for_all_to_all.hpp"
+#include "FDPS/util.hpp"
 
 namespace ParticleSimulator {
 
